@@ -14,7 +14,7 @@
 ## 快速安装（APK）
 
 1. 打开仓库的 **Releases** 页，或直接下载最新附件：
-   `https://github.com/k1ng-le0/cau-campus/releases/latest`
+   `https://github.com/k1ng-le0/campus/releases/latest`
 2. 下载 `caucampus-vX.Y.Z.apk` 安装（包名 `com.hobson.caucampus`，最低 Android 6；安装时允许「未知来源」）。
 3. 打开 App → 「我的」→ 绑定教务账号（学号 + 教务密码）→ 同步。
 
