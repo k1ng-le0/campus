@@ -639,6 +639,40 @@
     }
   }
 
+  /* ---------------------------------------------------------------- 更新检查 */
+
+  /* App 内更新检查的版本源：仓库 main 分支上的 version.json ——
+     build_apk.py 打包时会自动把新版本号/大小/sha256/更新说明写进去，
+     推到 GitHub 之后这里就能读到。放两个源：raw.githubusercontent 在国内
+     经常连不上，jsdelivr 的 CDN 一般通；按顺序试，成功一个就用。
+     CDN 有几小时缓存，对「提醒有新版」这个用途无所谓 —— 它只提醒不强装。 */
+  var UPDATE_SOURCES = [
+    'https://raw.githubusercontent.com/k1ng-le0/campus/main/version.json',
+    'https://cdn.jsdelivr.net/gh/k1ng-le0/campus@main/version.json'
+  ];
+
+  async function checkUpdateRemote() {
+    for (var i = 0; i < UPDATE_SOURCES.length; i++) {
+      var r = await nativeReq('GET', UPDATE_SOURCES[i], '', '', null);
+      if (r.error || r.status !== 200 || !r.body) continue;
+      try {
+        var info = JSON.parse(r.body);
+        // 🔴 只信形状对的：版本号必须是数字加点，别拿一页 HTML 当版本清单
+        if (info && typeof info.version === 'string' &&
+            /^[0-9]+(\.[0-9]+)*$/.test(info.version)) {
+          return {
+            ok: true,
+            version: info.version,
+            size: info.size || 0,
+            sha256: info.sha256 || '',
+            notes: Array.isArray(info.notes) ? info.notes : []
+          };
+        }
+      } catch (e) { /* 这个源内容脏了，换下一个 */ }
+    }
+    return { ok: false, error: '版本源都连不上（也可能手机没网）' };
+  }
+
   /* ---------------------------------------------------------------- 客户端 */
 
   var client = {
@@ -1131,6 +1165,10 @@
      path 和 q 分开传，谁也别替谁做决定。 */
   async function route(path, q, method, body) {
     if (path === '/api/health') return { ok: true, version: '0.1' };
+
+    if (path === '/api/update') {
+      return await checkUpdateRemote();
+    }
 
     if (path === '/api/state') {
       var cred = loadCred();

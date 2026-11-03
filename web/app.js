@@ -14,6 +14,16 @@ const KEY = {
 };
 
 const DAY_CN = ['一', '二', '三', '四', '五', '六', '日'];
+
+/* App 内更新检查。
+   版本源是仓库 main 分支的 version.json（build_apk.py 打包时自动写），
+   实际的取回逻辑在 localapi.js 的 /api/update（走原生 HTTP，免 CORS）。
+   下载走 GitHub Releases 固定链接 —— 附件名必须纯 ASCII，
+   中文文件名会被 GitHub 改名，链接就对不上了。 */
+const RELEASE_PAGE = 'https://github.com/k1ng-le0/campus/releases/latest';
+const apkUrl = (v) =>
+  'https://github.com/k1ng-le0/campus/releases/latest/download/caucampus-v' + v + '.apk';
+const IN_APP = !!(window.Android && typeof window.Android.req2 === 'function');
 const DEFAULT_TIMES = [
   ['08:00', '09:50'],
   ['10:10', '12:00'],
@@ -1106,6 +1116,55 @@ async function loadNotice(force) {
   renderNotice();
 }
 
+// ------------------------------------------------------------------ 更新检查
+
+// 语义化版本比较：>0 表示 a 更新。解析失败按 0 处理，不会抛。
+function cmpVersion(a, b) {
+  const pa = String(a).split('.').map(Number);
+  const pb = String(b).split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d) return d;
+  }
+  return 0;
+}
+
+let checkingUpdate = false;
+
+// manual=true 是「我的」页点按钮（失败要说话）；false 是启动时的静默检查
+// （只在发现新版本时才出 toast，别天天喊「已是最新」）。
+async function checkUpdate(manual) {
+  if (!IN_APP) {
+    if (manual) toast('网页版跟电脑上的代码一起更新，不用在这里检查');
+    return;
+  }
+  if (checkingUpdate) return;
+  checkingUpdate = true;
+  if (manual) renderMe();
+  try {
+    const r = await api('/api/update');
+    if (r && r.ok) {
+      const isNew = cmpVersion(r.version, APP_VERSION) > 0;
+      CFG.update = {
+        checkedAt: Math.floor(Date.now() / 1000),
+        latest: r.version,
+        notes: r.notes || [],
+        size: r.size || 0,
+        isNew: isNew,
+      };
+      saveCfg();
+      if (manual) toast(isNew ? '发现新版本 v' + r.version : '已是最新版本');
+      if (isNew && !manual) toast('发现新版本 v' + r.version + '，到「我的」页下载', 4000);
+    } else if (manual) {
+      toast((r && r.error) || '检查失败，稍后再试');
+    }
+  } catch (e) {
+    if (manual) toast('检查失败：' + (e.message || e));
+  }
+  checkingUpdate = false;
+  renderMe();
+}
+
 // ------------------------------------------------------------------ 我的
 
 function renderMe() {
@@ -1129,6 +1188,23 @@ function renderMe() {
       ? '<button class="btn small" data-action="sync"' + (syncing ? ' disabled' : '') + '>同步</button>'
       : '<button class="btn primary small" data-action="bind">绑定</button>') +
     '</div>';
+
+  // 发现新版本：置顶一张卡，别藏在「关于」里让人看不见
+  const upd = CFG.update;
+  if (IN_APP && upd && upd.isNew && upd.latest) {
+    const notes = (Array.isArray(upd.notes) ? upd.notes : []).slice(0, 3);
+    html += '<div class="update-card">' +
+      '<div class="upd-head"><span class="upd-badge">新版本</span>' +
+      '<span class="upd-title">v' + esc(upd.latest) + '</span>' +
+      (upd.size ? '<span class="upd-size">' + (upd.size / 1048576).toFixed(1) + ' MB</span>' : '') +
+      '</div>' +
+      (notes.length
+        ? '<div class="upd-notes">' + notes.map((n) => '· ' + esc(n)).join('<br>') + '</div>'
+        : '') +
+      '<button class="btn primary block" data-action="download">去下载</button>' +
+      '<button class="upd-link" data-action="releasepage">下载没反应？到 Releases 页看看</button>' +
+      '</div>';
+  }
 
   html += '<div class="section-label">账号</div><div class="list-card">' +
     '<button class="list-row" data-action="sync">' +
@@ -1180,9 +1256,19 @@ function renderMe() {
     html += '</div>';
   }
 
+  const updSub = !IN_APP ? ''
+    : checkingUpdate ? '正在检查…'
+    : (upd && upd.isNew && upd.latest ? '可更新到 v' + upd.latest
+    : (upd && upd.checkedAt ? '已是最新 · ' + fmtAgo(upd.checkedAt) + '查过' : '点按检查更新'));
+
   html += '<div class="section-label">关于</div><div class="list-card">' +
-    '<div class="list-row"><span class="list-main"><span class="list-title">CAU 校园通</span>' +
-    '<span class="list-sub">版本 ' + APP_VERSION + ' · 只读客户端</span></span></div>' +
+    (IN_APP
+      ? '<button class="list-row" data-action="checkupdate">' +
+        '<span class="list-main"><span class="list-title">检查更新</span>' +
+        '<span class="list-sub">当前 v' + APP_VERSION + (updSub ? ' · ' + esc(updSub) : '') +
+        '</span></span><span class="list-go">›</span></button>'
+      : '<div class="list-row"><span class="list-main"><span class="list-title">CAU 校园通</span>' +
+        '<span class="list-sub">版本 ' + APP_VERSION + ' · 只读客户端</span></span></div>') +
     '<div class="list-row"><span class="list-main"><span class="list-title">数据来源</span>' +
     '<span class="list-sub">newjw.cau.edu.cn（教务）· cau.edu.cn（公告）</span></span></div>' +
     '<div class="list-row"><span class="list-main"><span class="list-title">隐私</span>' +
@@ -1629,6 +1715,13 @@ function bindEvents() {
     if (act === 'unbind') doUnbind();
     if (act === 'settings') openSub('settings');
     if (act === 'times') openSub('times');
+    if (act === 'checkupdate') checkUpdate(true);
+    if (act === 'download') {
+      // 新版本卡上的「去下载」：交给系统浏览器下载 APK，装不装由用户在系统里确认
+      const v = (CFG.update && CFG.update.latest) || APP_VERSION;
+      window.open(apkUrl(v));
+    }
+    if (act === 'releasepage') window.open(RELEASE_PAGE);
   });
 
   $('calendarBody').addEventListener('click', (e) => {
@@ -1757,6 +1850,12 @@ function boot() {
       doSync({ silent: true });
     }
   });
+
+  // App 内自动检查更新：12 小时最多一次，安静进行，有新版才出提示。
+  // 晚 3 秒再查 —— 先让课表同步这种正事跑完，别抢首屏。
+  if (IN_APP && (!CFG.update || (Date.now() / 1000 - CFG.update.checkedAt) > 12 * 3600)) {
+    setTimeout(() => checkUpdate(false), 3000);
+  }
 }
 
 boot();

@@ -918,6 +918,39 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .ce-quick { display: flex; gap: 8px; margin-bottom: 8px; }
 .ce-quick .btn { flex: 1; min-width: 0; padding: 0 6px; }
 
+/* ---- App 内更新提醒 ---- */
+.update-card {
+  margin: 0 0 14px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid var(--brand);
+  background: var(--card);
+}
+.update-card .upd-head { display: flex; align-items: center; gap: 8px; }
+.update-card .upd-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-size: var(--fs-mini);
+  font-weight: 600;
+}
+.update-card .upd-title { font-size: var(--fs-head); font-weight: 700; }
+.update-card .upd-size { margin-left: auto; color: var(--sub); font-size: var(--fs-sub); }
+.update-card .upd-notes {
+  margin: 10px 0 12px;
+  color: var(--sub);
+  font-size: var(--fs-sub);
+  line-height: 1.7;
+}
+.update-card .upd-link {
+  display: block;
+  margin: 10px auto 0;
+  color: var(--sub);
+  font-size: var(--fs-mini);
+  text-decoration: underline;
+}
+
 .course-detail .cd-name { font-size: var(--fs-title); font-weight: 700; line-height: 1.25; }
 .course-detail .cd-code { margin-top: 4px; color: var(--sub); font-size: var(--fs-sub); font-variant-numeric: tabular-nums; }
 .cd-rows { margin: 14px 0 6px; }
