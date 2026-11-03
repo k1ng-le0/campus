@@ -107,8 +107,6 @@ python android/tools/make_icons.py
 | `RELEASE-NOTES.md` | 每个版本的更新内容；打包脚本会读本版本那一节（**一条一行，别折行**，否则脚本会报错并跳过清单更新） |
 | `version.json` | 当前 APK 的版本 / 大小 / sha256，打包时自动写 |
 | `启动.bat` | 一键启动 |
-| `env.local.bat` | 本机解释器/环境覆盖，不提交 |
-| `_probe/` | 探测产物，含个人数据，不提交 |
 
 ## 已知限制
 
