@@ -1,6 +1,6 @@
 """把 web/ 打包成 APK「CAU 校园通 0.1.0」。
 
-这套打包流程是从「航院通」搬过来的：不用 Gradle，本机没有 Android Studio，
+这套打包流程不用 Gradle——本机没有 Android Studio，
 而且这点代码用不上它。走官方那套命令行：aapt2 → javac → d8 → zipalign → apksigner。
 
 前置（都在工作区的 _lab/out/sdk/ 下，不随仓库分发）：

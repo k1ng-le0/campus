@@ -20,3 +20,6 @@ android/dist/
 
 # 本机解释器/环境覆盖（含个人目录路径），不入库
 env.local.bat
+
+# 工作区记忆/助手数据，不入库
+.workbuddy-ai/

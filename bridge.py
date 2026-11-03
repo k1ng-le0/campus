@@ -9,7 +9,7 @@
 
 访问控制：所有 POST 接口在入口校验 token；GET 里只有 /api/health 和
 /api/notice 公开，其余（课表/成绩/考试/学期/state）都要 token。
-航院通早期版本有一批只读 GET 漏了 token，这里不重蹈覆辙。
+只读 GET 也一律要求 token，不留无鉴权的数据接口。
 """
 
 from __future__ import annotations

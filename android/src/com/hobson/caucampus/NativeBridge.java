@@ -58,7 +58,7 @@ public class NativeBridge {
      * 带自定义请求头的版本。`headersJson` 形如 `{"X-Requested-With":"XMLHttpRequest"}`。
      *
      * 为什么需要单独一个方法而不是给 req 加参数：req 是既有接口，
-     * 航院通那边几十处调用都按 5 个参数写，改签名要全动一遍，风险不值得。
+     * 前端几十处调用都按 5 个参数写，改签名要全动一遍，风险不值得。
      *
      * 🔴 强智取登录种子的那个请求要带 `X-Requested-With: XMLHttpRequest`，
      *    没有这个重载就发不出去 —— 表现是「拿不到加密种子」。

@@ -29,9 +29,8 @@ import java.io.InputStream;
  *   2. 提供 Android.req2()：真正的 HTTP 请求（带 cookie），见 NativeBridge。
  *   3. 提供 Keystore 加密的凭据存取，见 CredStore。
  *
- * 这套壳是从「航院通」搬过来的（那边已经跑了三十几个版本），
- * 换掉的只有包名、UA 尾巴和教务地址 —— 网页版那一层照旧由 web/localapi.js
- * 顶替 bridge.py，界面代码一行没动。
+ * 这个壳只做三件事：发 assets、桥接 HTTP、存凭据；网页版那一层照旧由
+ * web/localapi.js 顶替 bridge.py，界面代码一行没动。
  */
 public class MainActivity extends Activity {
 
