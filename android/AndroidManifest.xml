@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.hobson.caucampus">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:name=".App"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+        <!-- 🔴 usesCleartextTraffic 是给**学校的跳转**留的，不是我们要发明文请求。
+             强智登录成功后可能 302 到 http 的内网页，Android 9+ 默认把这种跳转
+             直接掐掉，表现是「登录没成功，学校系统可能临时抽风」——
+             而网页版（Python requests）什么跳转都跟，所以那边从来不出事。
+             我们的每一个请求都还是从 https 起步的。 -->
+
+        <!-- 只有一个界面。课表/学业/公告/我的全在 WebView 里（assets/web），
+             原生这边只管「发 HTTP + 存凭据 + 返回键」。 -->
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|uiMode"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 「校内通知」那个窗口：应用内打开综合服务平台（要登录）。
+             不导出：只有 App 自己能拉起它 —— 它带着用户的门户登录态。 -->
+        <activity
+            android:name=".PortalActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden|uiMode"
+            android:exported="false"
+            android:label="@string/app_name"
+            android:windowSoftInputMode="adjustResize" />
+    </application>
+</manifest>

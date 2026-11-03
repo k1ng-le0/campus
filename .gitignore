@@ -1,0 +1,22 @@
+# 本机探测产物：含姓名、学号、课程、成绩，绝不提交
+_probe/
+.venv/
+__pycache__/
+*.pyc
+# 正式版的本地凭据（DPAPI 加密）也放在用户目录，不在项目里
+.env
+
+# 打包中间产物
+android/build/
+
+# APK 不进仓库，改放 GitHub Releases 附件（源码 clone 下来用 android/build_apk.py 自己打）
+android/dist/
+*.apk
+*.apk.idsig
+*.idsig
+
+# 本机编辑器配置
+.vscode/
+
+# 本机解释器/环境覆盖（含个人目录路径），不入库
+env.local.bat

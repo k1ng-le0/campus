@@ -1,0 +1,11 @@
+*.bat  text eol=crlf
+*.py   text
+*.js   text
+*.css  text
+*.html text
+*.md   text
+*.json text
+*.png  binary
+*.jpg  binary
+*.jar  binary
+*.keystore binary

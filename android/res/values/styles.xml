@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 不用 appcompat：整套界面在 WebView 里，原生这边只需要一个没有标题栏的窗口。
+         Theme.Material.Light.NoActionBar 是系统自带的，省掉一堆依赖。 -->
+    <style name="AppTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:statusBarColor">@color/bg</item>
+        <item name="android:navigationBarColor">@color/card</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

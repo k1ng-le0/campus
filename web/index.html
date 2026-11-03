@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1013" media="(prefers-color-scheme: dark)">
+<title>CAU 校园通</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============================ 课表 ============================ -->
+  <section class="page" id="page-schedule">
+    <header class="pagehead">
+      <div class="head-left">
+        <h1>课表</h1>
+        <div class="sub" id="semesterLabel">未绑定</div>
+      </div>
+      <div class="head-actions">
+        <button class="ghost-btn" id="btnCalendar" aria-label="校历">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>
+        </button>
+        <button class="ghost-btn" id="btnRefreshSchedule" aria-label="刷新">
+          <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="today-bar" id="todayBar" hidden></div>
+
+    <div class="weekbar" id="weekbar" hidden>
+      <button class="wk-btn" id="prevWeek" aria-label="上一周">‹</button>
+      <button class="wk-title" id="weekPick">
+        <span id="weekNum">第 1 周</span>
+        <span class="wk-range" id="weekRange"></span>
+      </button>
+      <button class="wk-btn" id="nextWeek" aria-label="下一周">›</button>
+      <button class="wk-today" id="todayBtn">今天</button>
+      <button class="wk-view" id="viewToggle" aria-label="切换周视图和日视图">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 10v10M15 10v10"/></svg>
+      </button>
+    </div>
+
+    <div class="stale" id="staleBar" hidden></div>
+
+    <div class="schedule-wrap" id="scheduleWrap">
+      <div class="week-view" id="weekView">
+        <div class="week-head" id="weekHead"></div>
+        <div class="week-body" id="weekGrid"></div>
+      </div>
+      <div class="day-view" id="dayView" hidden></div>
+    </div>
+
+    <div class="empty" id="scheduleEmpty" hidden>
+      <div class="empty-ico">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>
+      </div>
+      <h2 id="scheduleEmptyTitle">还没有课表</h2>
+      <p id="scheduleEmptyText">绑定教务账号后会自动同步一次。</p>
+      <button class="btn primary" id="goBind1">去绑定</button>
+    </div>
+  </section>
+
+  <!-- ============================ 学业 ============================ -->
+  <section class="page" id="page-study" hidden>
+    <header class="pagehead">
+      <h1>学业</h1>
+      <button class="ghost-btn" id="btnRefreshStudy" aria-label="刷新">
+        <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
+      </button>
+    </header>
+
+    <div class="seg" id="studySeg">
+      <button class="seg-btn on" data-view="exam">考试</button>
+      <button class="seg-btn" data-view="grade">成绩</button>
+      <button class="seg-btn" data-view="credit">学分</button>
+    </div>
+
+    <div class="scroll" id="studyExam">
+      <div class="chips" id="examChips" hidden></div>
+      <div id="examBody"></div>
+    </div>
+    <div class="scroll" id="studyGrade" hidden>
+      <div id="gradeBody"></div>
+    </div>
+    <div class="scroll" id="studyCredit" hidden>
+      <div id="creditBody"></div>
+    </div>
+  </section>
+
+  <!-- ============================ 公告 ============================ -->
+  <section class="page" id="page-notice" hidden>
+    <header class="pagehead">
+      <h1>公告</h1>
+      <button class="ghost-btn" id="btnRefreshNotice" aria-label="刷新">
+        <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></svg>
+      </button>
+    </header>
+    <div class="scroll" id="noticeBody"></div>
+  </section>
+
+  <!-- ============================ 我的 ============================ -->
+  <section class="page" id="page-me" hidden>
+    <header class="pagehead"><h1>我的</h1></header>
+    <div class="scroll" id="meBody"></div>
+  </section>
+
+  <!-- ============================ 校历 ============================ -->
+  <section class="page" id="page-calendar" hidden>
+    <header class="pagehead">
+      <button class="back-btn" id="calBack" aria-label="返回">‹</button>
+      <h1>校历</h1>
+      <div class="head-actions"></div>
+    </header>
+    <div class="scroll" id="calendarBody"></div>
+  </section>
+
+  <!-- ============================ 学期设置 ============================ -->
+  <section class="page" id="page-settings" hidden>
+    <header class="pagehead">
+      <button class="back-btn" id="settingsBack" aria-label="返回">‹</button>
+      <h1>学期设置</h1>
+      <div class="head-actions"></div>
+    </header>
+    <div class="scroll" id="settingsBody"></div>
+  </section>
+
+  <!-- ============================ 上课时间 ============================ -->
+  <section class="page" id="page-times" hidden>
+    <header class="pagehead">
+      <button class="back-btn" id="timesBack" aria-label="返回">‹</button>
+      <h1>上课时间</h1>
+      <div class="head-actions"></div>
+    </header>
+    <div class="scroll" id="timesBody"></div>
+  </section>
+
+</div>
+
+<!-- ============================ 底部导航 ============================ -->
+<nav class="tabbar" id="tabbar">
+  <button class="tab active" data-tab="schedule">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>
+    <span>课表</span>
+  </button>
+  <button class="tab" data-tab="study">
+    <svg viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5A1.5 1.5 0 0 0 20 18.5z"/></svg>
+    <span>学业</span>
+  </button>
+  <button class="tab" data-tab="notice">
+    <svg viewBox="0 0 24 24"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 20a2.2 2.2 0 0 0 4 0"/></svg>
+    <span>公告</span>
+  </button>
+  <button class="tab" data-tab="me">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>
+    <span>我的</span>
+  </button>
+</nav>
+
+<!-- ============================ 登录 / 绑定 ============================ -->
+<div class="sheet-back" id="loginSheet" hidden>
+  <div class="sheet">
+    <header class="sheet-head">
+      <h2>绑定教务账号</h2>
+      <button class="sheet-x" id="loginClose" aria-label="关闭">×</button>
+    </header>
+    <div class="sheet-body">
+      <label class="field">
+        <span>学号</span>
+        <input id="loginUser" inputmode="numeric" autocomplete="username" placeholder="例如 2023123456">
+      </label>
+      <label class="field">
+        <span>密码</span>
+        <div class="pwd-wrap">
+          <input id="loginPass" type="password" autocomplete="current-password" placeholder="教务系统密码">
+          <button class="eye" id="togglePass" type="button" aria-label="显示密码" aria-pressed="false">
+            <svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.6"/></svg>
+          </button>
+        </div>
+      </label>
+      <p class="hint">用的是<strong>教务系统</strong>（newjw.cau.edu.cn）的学号密码，不是校园网密码。密码会用 Windows 加密后存在本机；也可以随时解除绑定。</p>
+      <p class="form-msg" id="loginMsg"></p>
+      <button class="btn primary block" id="btnLogin">登录并同步</button>
+      <p class="hint tiny">强智教务是会话独占的，登录后可能把浏览器里的教务挤下线。这是学校系统的行为，不是本软件在踢人。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ 课程详情 ============================ -->
+<div class="sheet-back" id="courseSheet" hidden>
+  <div class="sheet">
+    <header class="sheet-head">
+      <h2 id="courseTitle">课程</h2>
+      <button class="sheet-x" id="courseClose" aria-label="关闭">×</button>
+    </header>
+    <div class="sheet-body" id="courseBody"></div>
+  </div>
+</div>
+
+<!-- ============================ 选周 ============================ -->
+<div class="sheet-back" id="weekSheet" hidden>
+  <div class="sheet">
+    <header class="sheet-head">
+      <h2>选择周次</h2>
+      <button class="sheet-x" id="weekClose" aria-label="关闭">×</button>
+    </header>
+    <div class="sheet-body">
+      <div class="week-picker" id="weekPicker"></div>
+      <button class="btn block" id="weekSettings">学期设置</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" hidden></div>
+
+<!-- App 内的本地服务：没有 window.Android（网页版）时它什么都不做 -->
+<script src="localapi.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
