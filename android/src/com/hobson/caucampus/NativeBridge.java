@@ -20,8 +20,8 @@ import java.util.concurrent.Executors;
  * JS 与原生之间唯一的通道。
  *
  * 分工：这里**只负责发 HTTP 和带 cookie**，登录/解析全在 web/localapi.js 里。
- * 之所以不把解析也搬过来：那边的正则和 cau_jw.py 是同一套（`_probe/` 的样本
- * 两边跑过对账），搬进 Java 就等于要维护第二份解析，迟早漂。
+ * 之所以不把解析也搬过来：那边的正则和 cau_jw.py 是同一套（开发期两边跑过
+ * 同一批真实页面对过账），搬进 Java 就等于要维护第二份解析，迟早漂。
  *
  * 🔴 请求必须异步回：Android.req2 是阻塞调用，如果让 JS 同步等，登录加同步
  *    要十几秒，整页会僵住 —— 转圈动画都不动，用户会以为死机了。
@@ -210,7 +210,7 @@ public class NativeBridge {
         int n;
         while ((n = in.read(buf)) > 0) bos.write(buf, 0, n);
         in.close();
-        // 农大教务是 UTF-8（_probe/ 的样本里 meta 写着 charset="UTF-8"）；
+        // 农大教务页面声明 charset="UTF-8"（开发期抓的样本核对过）；
         // 用 Python 版对照过，别改成平台默认编码
         return new String(bos.toByteArray(), StandardCharsets.UTF_8);
     }

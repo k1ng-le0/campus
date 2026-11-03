@@ -1,12 +1,15 @@
-"""把 web/ 打包成 APK「CAU 校园通 0.1.0」。
+"""把 web/ 打包成 APK「CAU 校园通」。
 
 这套打包流程不用 Gradle——本机没有 Android Studio，
 而且这点代码用不上它。走官方那套命令行：aapt2 → javac → d8 → zipalign → apksigner。
 
-前置（都在工作区的 _lab/out/sdk/ 下，不随仓库分发）：
+前置（Android 工具链不随仓库分发，需自行准备）：
     <jdk17>/                        JDK 17（找 bin/javac.exe）
     android-14/                     build-tools 34（aapt2/d8/zipalign/apksigner）
     android-13/android.jar          platform-33
+
+脚本按「CAU_SDK 环境变量 → 仓库上一级 _lab/out/sdk/」的顺序找工具，
+两处都没有会停下并提示怎么指。
 
 用法：
     python build_apk.py                # 打包
@@ -41,7 +44,7 @@ TARGET_SDK = 33
 
 
 def _sdk_dir() -> Path:
-    """Android SDK / JDK 的位置。本机放在工作区的 _lab/out/sdk 下。
+    """Android SDK / JDK 的位置。默认在仓库上一级的 _lab/out/sdk 下找。
 
     🔴 别在这里写死带用户名的绝对路径 —— 公开仓库里带着用户名既没意义
        （别人用不了这个路径），也没必要露。按「环境变量 → 工作区相对位置」找。
@@ -53,7 +56,7 @@ def _sdk_dir() -> Path:
     if near.exists():
         return near
     sys.exit("找不到 Android SDK：把 CAU_SDK 指到 build-tools 那一层，"
-             "或者按文件开头「前置」里说的放到 _lab/out/sdk")
+             "或按文件开头「前置」说的放到仓库上一级 _lab/out/sdk/")
 
 
 SDK = _sdk_dir()
@@ -103,7 +106,7 @@ def check_env():
     for f in (JAVA, JAVAC, BT / "aapt2.exe", BT / "zipalign.exe",
               BT / "lib" / "d8.jar", BT / "lib" / "apksigner.jar", ANDROID_JAR):
         if not f.exists():
-            raise SystemExit("缺文件：%s\n（先跑 _lab/out/sdk 的下载步骤）" % f)
+            raise SystemExit("缺文件：%s\n（Android 工具链不随仓库分发，见文件开头「前置」）" % f)
 
 
 def check_consistency():
