@@ -106,7 +106,6 @@ python android/tools/make_icons.py
 | `android/` | APK 的壳：`MainActivity`（发 assets、返回键）、`NativeBridge`（HTTP + 凭据）、`CredStore`（Keystore 加密）、`build_apk.py` |
 | `RELEASE-NOTES.md` | 每个版本的更新内容；打包脚本会读本版本那一节（**一条一行，别折行**，否则脚本会报错并跳过清单更新） |
 | `version.json` | 当前 APK 的版本 / 大小 / sha256，打包时自动写 |
-| `probe_cau.py` | 第一次用的接口探测脚本（可留作排查） |
 | `启动.bat` | 一键启动 |
 | `env.local.bat` | 本机解释器/环境覆盖，不提交 |
 | `_probe/` | 探测产物，含个人数据，不提交 |
