@@ -4,7 +4,7 @@
 
 'use strict';
 
-const APP_VERSION = '0.1.7';
+const APP_VERSION = '0.1.8';
 const KEY = {
   token: 'cau.token',
   data: 'cau.data',
@@ -238,8 +238,14 @@ function isHidden(c) {
   const key = c.code || c.name;
   return (CFG.hidden || []).includes(key);
 }
+// 自定义课程：只存本机设置（CFG.custom），同步教务不会覆盖，解除绑定也不清。
+function customCourses() {
+  return Array.isArray(CFG.custom) ? CFG.custom : [];
+}
 function visibleCourses() {
-  return ((DATA && DATA.courses) || []).filter((c) => !isHidden(c));
+  return ((DATA && DATA.courses) || [])
+    .filter((c) => !isHidden(c))
+    .concat(customCourses());
 }
 function coursesAt(day, period, week) {
   return visibleCourses().filter((c) =>
@@ -447,14 +453,16 @@ function openSub(name) {
 function renderSchedule() {
   $('semesterLabel').textContent = semesterLabel();
   renderTodayBar();
-  const hasData = !!(DATA && Array.isArray(DATA.courses));
-  const hasCourses = hasData && DATA.courses.length > 0;
+  // 有教务数据、或者有自定义课程，都算「有课表」
+  const hasData = !!(DATA && Array.isArray(DATA.courses)) || customCourses().length > 0;
+  const hasCourses = hasData && visibleCourses().length > 0;
   $('weekbar').hidden = !hasData;
   $('scheduleWrap').hidden = !hasCourses;
   $('scheduleEmpty').hidden = hasCourses;
 
   const stale = $('staleBar');
-  if (hasData && DATA.syncedAt && (Date.now() / 1000 - DATA.syncedAt) > 12 * 3600) {
+  // 🔴 DATA 可能为 null（只加了自定义课、还没绑教务），要先判空
+  if (hasData && DATA && DATA.syncedAt && (Date.now() / 1000 - DATA.syncedAt) > 12 * 3600) {
     stale.hidden = false;
     stale.textContent = '显示的是 ' + fmtAgo(DATA.syncedAt) + '同步的数据，连上教务系统后点刷新';
   } else {
@@ -599,21 +607,34 @@ function renderDayView() {
 function openCourse(c) {
   if (!c) return;
   COURSE_SEL = c;
-  const hidden = isHidden(c);
+  let btns;
+  if (c.custom) {
+    btns =
+      '<button class="btn block" id="btnEditCustom" style="margin-top:14px">编辑这门课</button>' +
+      '<button class="btn danger block" id="btnDelCustom" style="margin-top:8px">删除这门课</button>' +
+      '<p class="hint tiny">自定义课程只保存在本机，和教务同步无关；改完点保存立刻生效。</p>';
+  } else {
+    const hidden = isHidden(c);
+    btns =
+      '<button class="btn ' + (hidden ? '' : 'danger') + ' block" id="btnHideCourse">' +
+        (hidden ? '恢复这门课' : '隐藏这门课') +
+      '</button>' +
+      '<p class="hint tiny">隐藏的是整门课（按课程代码），这个学期所有时段一起消失。恢复在「我的」页。</p>';
+  }
   $('courseTitle').textContent = displayName(c);
   $('courseBody').innerHTML =
     '<div class="course-detail">' +
-      '<div class="cd-code">' + esc([c.code, c.classNo].filter(Boolean).join(' · ') || '课程代码未知') + '</div>' +
+      '<div class="cd-code">' +
+        esc(c.custom ? '自定义课程' :
+          ([c.code, c.classNo].filter(Boolean).join(' · ') || '课程代码未知')) +
+      '</div>' +
       '<div class="cd-rows">' +
         '<div class="cd-row"><div class="k">教师</div><div class="v">' + esc(c.teacher || '—') + '</div></div>' +
         '<div class="cd-row"><div class="k">教室</div><div class="v">' + esc(c.room || '—') + '</div></div>' +
         '<div class="cd-row"><div class="k">周次</div><div class="v">' + esc(compressWeeks(c.weeks) || '—') + '</div></div>' +
         '<div class="cd-row"><div class="k">节次</div><div class="v">' + esc(slotsText(c) || '—') + '</div></div>' +
       '</div>' +
-      '<button class="btn ' + (hidden ? '' : 'danger') + ' block" id="btnHideCourse">' +
-        (hidden ? '恢复这门课' : '隐藏这门课') +
-      '</button>' +
-      '<p class="hint tiny">隐藏的是整门课（按课程代码），这个学期所有时段一起消失。恢复在「我的」页。</p>' +
+      btns +
     '</div>';
   $('courseSheet').hidden = false;
 }
@@ -632,6 +653,120 @@ function toggleHideCourse() {
   renderSchedule();
   renderMe();
   toast(i >= 0 ? '已恢复这门课' : '已隐藏这门课');
+}
+
+// ------------------------------------------------------------------ 自定义课程
+
+let EDIT_CUST = null;   // 正在编辑的自定义课对象（数组里的引用）；null = 新增
+
+// 打开添加/编辑浮层。prefill 为自定义课对象时是编辑，null 时是新增。
+function openCourseEdit(prefill) {
+  EDIT_CUST = (prefill && prefill.custom) ? prefill : null;
+  $('courseEditTitle').textContent = EDIT_CUST ? '编辑课程' : '添加课程';
+
+  let dayOpts = '';
+  for (let d = 0; d < 7; d++) {
+    dayOpts += '<option value="' + d + '">周' + DAY_CN[d] + '</option>';
+  }
+  $('ceDay').innerHTML = dayOpts;
+
+  const n = unitCount();
+  let pOpts = '';
+  for (let p = 0; p < n; p++) {
+    pOpts += '<option value="' + p + '">第' + (p + 1) + '大节</option>';
+  }
+  $('ceFrom').innerHTML = pOpts;
+  $('ceTo').innerHTML = pOpts;
+
+  $('ceName').value = prefill ? String(prefill.name || '') : '';
+  $('ceTeacher').value = prefill ? String(prefill.teacher || '') : '';
+  $('ceRoom').value = prefill ? String(prefill.room || '') : '';
+  let day = 0, from = 0, to = 0;
+  if (prefill && Array.isArray(prefill.slots) && prefill.slots.length) {
+    day = prefill.slots[0].day;
+    from = prefill.slots[0].period;
+    to = prefill.slots[prefill.slots.length - 1].period;
+    if (to < from) { const t = from; from = to; to = t; }
+  }
+  $('ceDay').value = String(Math.max(0, Math.min(6, day)));
+  $('ceFrom').value = String(Math.max(0, Math.min(n - 1, from)));
+  $('ceTo').value = String(Math.max(0, Math.min(n - 1, to)));
+
+  renderCeWeeks(prefill && prefill.weeks ? prefill.weeks : [currentWeek()]);
+  $('courseSheet').hidden = true;
+  $('courseEditSheet').hidden = false;
+}
+
+// 周次点选网格。sel 是初始选中的周次数组；「本周」那格加 outline。
+function renderCeWeeks(sel) {
+  const n = totalWeeks();
+  const on = new Set(sel || []);
+  const now = currentWeek();
+  let html = '';
+  for (let w = 1; w <= n; w++) {
+    html += '<button type="button" class="week-cell' + (on.has(w) ? ' on' : '') +
+      (w === now ? ' now' : '') + '" data-w="' + w + '">' + w + '</button>';
+  }
+  $('ceWeeks').innerHTML = html;
+}
+
+function ceSelectedWeeks() {
+  return Array.from($('ceWeeks').querySelectorAll('.week-cell.on'))
+    .map((b) => Number(b.dataset.w))
+    .sort((a, b) => a - b);
+}
+
+function saveCustomCourse() {
+  const name = $('ceName').value.trim();
+  if (!name) { toast('课程名称要填一个'); return; }
+  const weeks = ceSelectedWeeks();
+  if (!weeks.length) { toast('至少选一个周次'); return; }
+  const day = Number($('ceDay').value) || 0;
+  let from = Number($('ceFrom').value) || 0;
+  let to = Number($('ceTo').value) || from;
+  if (to < from) { const t = from; from = to; to = t; }
+  const slots = [];
+  for (let p = from; p <= to; p++) slots.push({ day: day, period: p });
+  const obj = {
+    custom: true,
+    name: name,
+    code: '',
+    classNo: '',
+    teacher: $('ceTeacher').value.trim(),
+    room: $('ceRoom').value.trim(),
+    weeks: weeks,
+    slots: slots,
+  };
+  const editing = !!EDIT_CUST;
+  const arr = customCourses();
+  if (editing) {
+    const i = arr.indexOf(EDIT_CUST);
+    if (i >= 0) arr[i] = obj; else arr.push(obj);
+  } else {
+    arr.push(obj);
+  }
+  CFG.custom = arr;
+  saveCfg();
+  EDIT_CUST = null;
+  $('courseEditSheet').hidden = true;
+  renderSchedule();
+  renderMe();
+  toast(editing ? '已保存修改' : '已添加「' + name + '」');
+}
+
+function deleteCustomCourse() {
+  const c = COURSE_SEL;
+  if (!c || !c.custom) return;
+  if (!confirm('删除自定义课程「' + displayName(c) + '」？')) return;
+  const arr = customCourses();
+  const i = arr.indexOf(c);
+  if (i >= 0) arr.splice(i, 1);
+  CFG.custom = arr;
+  saveCfg();
+  $('courseSheet').hidden = true;
+  renderSchedule();
+  renderMe();
+  toast('已删除');
 }
 
 // ------------------------------------------------------------------ 学业：考试 / 成绩 / 学分
@@ -1033,6 +1168,18 @@ function renderMe() {
     html += '</div>';
   }
 
+  const customs = customCourses();
+  if (customs.length) {
+    html += '<div class="section-label">自定义课程</div><div class="list-card">';
+    customs.forEach((c, i) => {
+      html += '<div class="list-row"><span class="list-main">' +
+        '<span class="list-title">' + esc(displayName(c)) + '</span>' +
+        '<span class="list-sub">' + esc(slotsText(c) || '—') + '</span></span>' +
+        '<button class="btn small" data-editcustom="' + i + '">编辑</button></div>';
+    });
+    html += '</div>';
+  }
+
   html += '<div class="section-label">关于</div><div class="list-card">' +
     '<div class="list-row"><span class="list-main"><span class="list-title">CAU 校园通</span>' +
     '<span class="list-sub">版本 ' + APP_VERSION + ' · 只读客户端</span></span></div>' +
@@ -1372,6 +1519,7 @@ function bindEvents() {
   $('btnRefreshStudy').addEventListener('click', () => doSync());
   $('btnRefreshNotice').addEventListener('click', () => loadNotice(true));
   $('goBind1').addEventListener('click', () => { BOUND ? doSync() : showLogin(''); });
+  $('btnAddCourse').addEventListener('click', () => openCourseEdit(null));
 
   $('weekHead').addEventListener('click', (e) => {
     const b = e.target.closest('.day-head');
@@ -1465,6 +1613,12 @@ function bindEvents() {
   });
 
   $('meBody').addEventListener('click', (e) => {
+    const ec = e.target.closest('[data-editcustom]');
+    if (ec) {
+      const c = customCourses()[Number(ec.dataset.editcustom)];
+      if (c) openCourseEdit(c);
+      return;
+    }
     const r = e.target.closest('[data-restore]');
     if (r) { restoreCourse(r.dataset.restore); return; }
     const a = e.target.closest('[data-action]');
@@ -1517,6 +1671,28 @@ function bindEvents() {
   $('courseClose').addEventListener('click', () => { $('courseSheet').hidden = true; });
   $('courseBody').addEventListener('click', (e) => {
     if (e.target.id === 'btnHideCourse') toggleHideCourse();
+    if (e.target.id === 'btnEditCustom') openCourseEdit(COURSE_SEL);
+    if (e.target.id === 'btnDelCustom') deleteCustomCourse();
+  });
+
+  $('courseEditClose').addEventListener('click', () => {
+    EDIT_CUST = null;
+    $('courseEditSheet').hidden = true;
+  });
+  $('ceSave').addEventListener('click', saveCustomCourse);
+  $('ceWeeks').addEventListener('click', (e) => {
+    const b = e.target.closest('.week-cell');
+    if (b) b.classList.toggle('on');
+  });
+  $('ceQuick').addEventListener('click', (e) => {
+    const q = e.target.closest('[data-q]');
+    if (!q) return;
+    const n = totalWeeks();
+    let sel = [];
+    if (q.dataset.q === 'all') for (let w = 1; w <= n; w++) sel.push(w);
+    if (q.dataset.q === 'odd') for (let w = 1; w <= n; w += 2) sel.push(w);
+    if (q.dataset.q === 'even') for (let w = 2; w <= n; w += 2) sel.push(w);
+    renderCeWeeks(sel);
   });
 
   document.querySelectorAll('.sheet-back').forEach((back) => {
@@ -1549,6 +1725,11 @@ function openWeekSheet() {
 // 安卓返回键（以后打包 APK 用）：先关浮层，再回 tab，最后才退出
 window.appBack = function () {
   if (!$('loginSheet').hidden) { hideLogin(); return true; }
+  if (!$('courseEditSheet').hidden) {
+    EDIT_CUST = null;
+    $('courseEditSheet').hidden = true;
+    return true;
+  }
   if (!$('courseSheet').hidden) { $('courseSheet').hidden = true; return true; }
   if (!$('weekSheet').hidden) { $('weekSheet').hidden = true; return true; }
   if (SUBPAGES.includes(CUR_PAGE)) { switchTab(SUB_PARENT[CUR_PAGE]); return true; }

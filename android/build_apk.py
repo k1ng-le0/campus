@@ -36,8 +36,8 @@ WEB = MOBILE / "web"
 BUILD = HERE / "build"
 DIST = HERE / "dist"
 
-VERSION_NAME = "0.1.7"
-VERSION_CODE = 8
+VERSION_NAME = "0.1.8"
+VERSION_CODE = 9
 PKG = "com.hobson.caucampus"
 MIN_SDK = 23
 TARGET_SDK = 33

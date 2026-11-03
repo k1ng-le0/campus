@@ -897,6 +897,27 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .form-msg { min-height: 18px; margin: 2px 0 10px; color: var(--red); font-size: var(--fs-sub); line-height: 1.4; }
 .form-msg.ok { color: var(--green); }
 
+/* ---- 自定义课程编辑 ---- */
+.edit-grid3 {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1fr;
+  gap: 10px;
+}
+.field select {
+  width: 100%;
+  height: 46px;
+  border-radius: 10px;
+  background: var(--card-2);
+  padding: 0 10px;
+  border: 0;
+  color: var(--text);
+  font-size: var(--fs-head);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.ce-quick { display: flex; gap: 8px; margin-bottom: 8px; }
+.ce-quick .btn { flex: 1; min-width: 0; padding: 0 6px; }
+
 .course-detail .cd-name { font-size: var(--fs-title); font-weight: 700; line-height: 1.25; }
 .course-detail .cd-code { margin-top: 4px; color: var(--sub); font-size: var(--fs-sub); font-variant-numeric: tabular-nums; }
 .cd-rows { margin: 14px 0 6px; }

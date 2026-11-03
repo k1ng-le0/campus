@@ -20,6 +20,9 @@
         <div class="sub" id="semesterLabel">未绑定</div>
       </div>
       <div class="head-actions">
+        <button class="ghost-btn" id="btnAddCourse" aria-label="添加课程">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
         <button class="ghost-btn" id="btnCalendar" aria-label="校历">
           <svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>
         </button>
@@ -210,6 +213,56 @@
     <div class="sheet-body">
       <div class="week-picker" id="weekPicker"></div>
       <button class="btn block" id="weekSettings">学期设置</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ 添加 / 编辑课程 ============================ -->
+<div class="sheet-back" id="courseEditSheet" hidden>
+  <div class="sheet">
+    <header class="sheet-head">
+      <h2 id="courseEditTitle">添加课程</h2>
+      <button class="sheet-x" id="courseEditClose" aria-label="关闭">×</button>
+    </header>
+    <div class="sheet-body">
+      <label class="field">
+        <span>课程名称 *</span>
+        <input id="ceName" placeholder="例如 网球、发展对象培训班">
+      </label>
+      <div class="edit-grid3">
+        <label class="field">
+          <span>星期</span>
+          <select id="ceDay"></select>
+        </label>
+        <label class="field">
+          <span>从大节</span>
+          <select id="ceFrom"></select>
+        </label>
+        <label class="field">
+          <span>到大节</span>
+          <select id="ceTo"></select>
+        </label>
+      </div>
+      <label class="field">
+        <span>教师（选填）</span>
+        <input id="ceTeacher" placeholder="选填">
+      </label>
+      <label class="field">
+        <span>教室（选填）</span>
+        <input id="ceRoom" placeholder="选填">
+      </label>
+      <div class="field">
+        <span>周次 *（点选，再点一下取消）</span>
+        <div class="ce-quick" id="ceQuick">
+          <button type="button" class="btn small" data-q="all">全部周</button>
+          <button type="button" class="btn small" data-q="odd">单周</button>
+          <button type="button" class="btn small" data-q="even">双周</button>
+          <button type="button" class="btn small" data-q="none">清空</button>
+        </div>
+        <div class="week-picker" id="ceWeeks"></div>
+      </div>
+      <button class="btn primary block" id="ceSave">保存</button>
+      <p class="hint tiny" style="padding:10px 4px">自定义课程只保存在本机，和教务同步互不影响；点课表里的课块可以编辑或删除。</p>
     </div>
   </div>
 </div>
