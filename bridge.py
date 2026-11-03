@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""CAU 校园通 · 本地服务
+"""老农民校园通 · 本地服务
 
 网页版：电脑跑这个服务，手机浏览器打开局域网地址。
 它替浏览器登录 newjw.cau.edu.cn，把课表/成绩/考试/公告转成同源 JSON。
@@ -417,7 +417,7 @@ def lan_ips() -> list[str]:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="CAU 校园通 · 本地服务")
+    ap = argparse.ArgumentParser(description="老农民校园通 · 本地服务")
     ap.add_argument("--port", type=int, default=8790)
     ap.add_argument("--no-browser", action="store_true")
     args = ap.parse_args()
@@ -435,7 +435,7 @@ def main() -> int:
                                     timeout=2) as r:
             h = json.loads(r.read().decode("utf-8"))
         if h.get("ok") and h.get("version") == "0.1":
-            print("已有 CAU 校园通在运行：%s" % local)
+            print("已有 老农民校园通在运行：%s" % local)
             if not args.no_browser:
                 webbrowser.open(local)
             return 0
@@ -450,7 +450,7 @@ def main() -> int:
 
     ips = lan_ips() or ["127.0.0.1"]
     print()
-    print("  CAU 校园通 · 本地服务已启动")
+    print("  老农民校园通 · 本地服务已启动")
     print("  " + "-" * 50)
     print("  电脑上打开：  %s" % local)
     for ip in ips:

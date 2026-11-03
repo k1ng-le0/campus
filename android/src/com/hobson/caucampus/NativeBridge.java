@@ -210,7 +210,7 @@ public class NativeBridge {
         int n;
         while ((n = in.read(buf)) > 0) bos.write(buf, 0, n);
         in.close();
-        // 农大教务页面声明 charset="UTF-8"（开发期抓的样本核对过）；
+        // 农专教务页面声明 charset="UTF-8"（开发期抓的样本核对过）；
         // 用 Python 版对照过，别改成平台默认编码
         return new String(bos.toByteArray(), StandardCharsets.UTF_8);
     }

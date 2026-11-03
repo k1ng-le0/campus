@@ -1,4 +1,4 @@
-/* CAU 校园通 · 前端逻辑
+/* 老农民校园通 · 前端逻辑
    纯原生 JS，无框架、无构建。数据来自同源的 bridge.py，
    bridge.py 再替浏览器去登录 newjw.cau.edu.cn。 */
 
@@ -163,7 +163,7 @@ async function api(path, body) {
 
 // ------------------------------------------------------------------ 学期 / 周次
 
-/* 农大教务的学期写法：2026-2027学年秋季 / 春季 / 夏季。
+/* 农专教务的学期写法：2026-2027学年秋季 / 春季 / 夏季。
    默认开学日：秋季 9/1、春季 2/20、夏季 7/1 之后最近的周一。
    这个值只是「没有校历时」的估算，用户可以在「我的 → 学期设置」里改。 */
 function semesterBase(semester) {
@@ -1267,7 +1267,7 @@ function renderMe() {
         '<span class="list-main"><span class="list-title">检查更新</span>' +
         '<span class="list-sub">当前 v' + APP_VERSION + (updSub ? ' · ' + esc(updSub) : '') +
         '</span></span><span class="list-go">›</span></button>'
-      : '<div class="list-row"><span class="list-main"><span class="list-title">CAU 校园通</span>' +
+      : '<div class="list-row"><span class="list-main"><span class="list-title">老农民校园通</span>' +
         '<span class="list-sub">版本 ' + APP_VERSION + ' · 只读客户端</span></span></div>') +
     '<div class="list-row"><span class="list-main"><span class="list-title">数据来源</span>' +
     '<span class="list-sub">newjw.cau.edu.cn（教务）· cau.edu.cn（公告）</span></span></div>' +

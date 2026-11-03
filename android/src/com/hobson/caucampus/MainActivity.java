@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * CAU 校园通 · 唯一的一个界面。
+ * 老农民校园通 · 唯一的一个界面。
  *
  * 界面本身是 WebView 里那套 HTML/CSS/JS（和网页版同一份代码），
  * 原生这边只干三件网页干不了的事：

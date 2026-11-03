@@ -1,4 +1,4 @@
-"""把 web/ 打包成 APK「CAU 校园通」。
+"""把 web/ 打包成 APK「老农民校园通」。
 
 这套打包流程不用 Gradle——本机没有 Android Studio，
 而且这点代码用不上它。走官方那套命令行：aapt2 → javac → d8 → zipalign → apksigner。
@@ -141,8 +141,8 @@ def check_consistency():
         bad.append("MainActivity 的 UA 后缀是 %s，应为 %s" % (got, VERSION_NAME))
 
     strings = (HERE / "res" / "values" / "strings.xml").read_text(encoding="utf-8")
-    if 'name="app_name">CAU 校园通<' not in strings:
-        bad.append("strings.xml 里的 app_name 不是「CAU 校园通」")
+    if 'name="app_name">老农民校园通<' not in strings:
+        bad.append("strings.xml 里的 app_name 不是「老农民校园通」")
 
     html = (WEB / "index.html").read_text(encoding="utf-8")
     i_local = html.find('src="localapi.js"')
@@ -356,7 +356,7 @@ def write_manifest(apk: Path):
         except Exception:
             info = {}
     raw = apk.read_bytes()
-    info["name"] = "CAU 校园通"
+    info["name"] = "老农民校园通"
     info["version"] = VERSION_NAME
     info["code"] = VERSION_CODE
     info["size"] = len(raw)
@@ -377,7 +377,7 @@ def write_manifest(apk: Path):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="打包 CAU 校园通 APK")
+    ap = argparse.ArgumentParser(description="打包 老农民校园通 APK")
     ap.add_argument("--clean", action="store_true")
     args = ap.parse_args()
 
@@ -408,7 +408,7 @@ def main():
 
     size = out.stat().st_size
     # 顺手在项目根目录放一份：手机上装的时候直接找得到，不用翻 dist/
-    top = MOBILE / "CAU校园通.apk"
+    top = MOBILE / "老农民校园通.apk"
     shutil.copy2(out, top)
     write_manifest(out)
 
