@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
  * JS 与原生之间唯一的通道。
  *
  * 分工：这里**只负责发 HTTP 和带 cookie**，登录/解析全在 web/localapi.js 里。
- * 之所以不把解析也搬过来：那边的正则和 cau_jw.py 是同一套（开发期两边跑过
+ * 之所以不把解析也搬过来：那边的正则和 jw_client.py 是同一套（开发期两边跑过
  * 同一批真实页面对过账），搬进 Java 就等于要维护第二份解析，迟早漂。
  *
  * 🔴 请求必须异步回：Android.req2 是阻塞调用，如果让 JS 同步等，登录加同步
@@ -33,7 +33,7 @@ public class NativeBridge {
     private static final String BASE = "https://newjw.cau.edu.cn";
 
     /**
-     * 和 cau_jw.py 的 UA 保持一致（桌面 Chrome）。
+     * 和 jw_client.py 的 UA 保持一致（桌面 Chrome）。
      * 强智不看 UA，但两边一样的话，出问题时对比日志能少一个变量。
      */
     private static final String UA =

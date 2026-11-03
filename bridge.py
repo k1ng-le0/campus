@@ -38,8 +38,8 @@ ACCOUNT_FILE = DATA_DIR / "account.bin"
 TOKEN_FILE = DATA_DIR / "token.txt"
 
 sys.path.insert(0, str(HERE))
-import cau_jw  # noqa: E402
-import notice_cau  # noqa: E402
+import jw_client  # noqa: E402
+import notice_campus  # noqa: E402
 
 
 # ------------------------------------------------------------------ DPAPI
@@ -124,11 +124,11 @@ class Service:
 
     def __init__(self) -> None:
         self.lock = threading.RLock()
-        self.client: cau_jw.CauClient | None = None
+        self.client: jw_client.CauClient | None = None
 
-    def _ensure(self, username: str, password: str) -> cau_jw.CauClient:
+    def _ensure(self, username: str, password: str) -> jw_client.CauClient:
         if self.client is None or not self.client.logged_in:
-            self.client = cau_jw.CauClient()
+            self.client = jw_client.CauClient()
             self.client.login(username, password)
         return self.client
 
@@ -139,7 +139,7 @@ class Service:
                 try:
                     cli = self._ensure(username, password)
                     return fn(cli)
-                except cau_jw.CauError as exc:
+                except jw_client.CauError as exc:
                     if attempt == 0 and exc.kind == "expired":
                         self.client = None
                         continue
@@ -149,10 +149,10 @@ class Service:
         with self.lock:
             for attempt in (0, 1):
                 try:
-                    cli = cau_jw.CauClient()
+                    cli = jw_client.CauClient()
                     self.client = cli
                     return cli.sync(username, password)
-                except cau_jw.CauError as exc:
+                except jw_client.CauError as exc:
                     if attempt == 0 and exc.kind == "expired":
                         self.client = None
                         continue
@@ -180,7 +180,7 @@ SERVICE = Service()
 
 def _err(exc: Exception) -> dict:
     out = {"ok": False, "error": str(exc)}
-    if isinstance(exc, cau_jw.CauError):
+    if isinstance(exc, jw_client.CauError):
         out["kind"] = exc.kind
         if exc.kind == "auth":
             out["authFail"] = True
@@ -331,7 +331,7 @@ class Handler(SimpleHTTPRequestHandler):
             force = (q.get("force", ["0"])[0] or "0") == "1"
             # all=1 = 不过滤招聘/招租（界面上那个「显示全部」）
             show_all = (q.get("all", ["0"])[0] or "0") == "1"
-            self._json(notice_cau.fetch_list(limit=limit, force=force,
+            self._json(notice_campus.fetch_list(limit=limit, force=force,
                                              show_all=show_all))
             return
         if path in ("/", "/index.html"):
@@ -379,7 +379,7 @@ class Handler(SimpleHTTPRequestHandler):
                 payload = SERVICE.sync(acc[0], acc[1])
             except Exception as exc:  # noqa: BLE001
                 out = _err(exc)
-                if isinstance(exc, cau_jw.CauError) and exc.kind == "auth":
+                if isinstance(exc, jw_client.CauError) and exc.kind == "auth":
                     out["authFail"] = True
                 self._json(out)
                 return

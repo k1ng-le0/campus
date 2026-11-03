@@ -140,8 +140,8 @@ CAU_SDK=<工具目录> python android/build_apk.py   # 工具不在约定位置�
 | 文件 | 作用 |
 | --- | --- |
 | `bridge.py` | 网页版本地服务：HTTP、凭据加密、静态页面、API。所有 POST 接口校验 token，数据类 GET 也要求 token |
-| `cau_jw.py` | 强智教务客户端与解析器（登录、课表、成绩、考试、学期） |
-| `notice_cau.py` | 学校通知公告抓取 |
+| `jw_client.py` | 强智教务客户端与解析器（登录、课表、成绩、考试、学期） |
+| `notice_campus.py` | 学校通知公告抓取 |
 | `web/` | 手机端界面（纯原生 JS，无框架、无构建）；`localapi.js` 在 App 内顶替 bridge.py 的 `/api/*`，界面两边完全一致；App 内更新检查（`/api/update`）也在这里 |
 | `android/` | APK 壳：MainActivity（发 assets）、NativeBridge（HTTP）、CredStore（Keystore 加密）、build_apk.py（打包脚本） |
 | `version.json` | 当前 APK 版本 / 大小 / sha256，打包时自动写；也是 App 内更新检查的版本源 |

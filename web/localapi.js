@@ -12,7 +12,7 @@
        界面 fetch('/api/timetable')
          → 这里接住
          → Android.req2()（原生发 HTTP，带 cookie 罐）
-         → 用和 cau_jw.py 一模一样的正则解析
+         → 用和 jw_client.py 一模一样的正则解析
          → 拼成同样的 JSON 还回去
 
    界面代码一行都不用改 —— 它不知道自己连的是 Python 还是这个。
@@ -22,7 +22,7 @@
    ================================================================
    1. 🔴 **网页版必须完全空转**。文件顶部那个 guard 一 return，后面全不执行：
       没有 Android 对象就说明 bridge.py 在跑，抢 fetch 会把网页版弄坏。
-   2. 🔴 **解析逻辑要和 cau_jw.py 保持一致**。两边各写一套迟早会漂，
+   2. 🔴 **解析逻辑要和 jw_client.py 保持一致**。两边各写一套迟早会漂，
       所以这里几乎是逐行照搬（正则、字段名、默认值都一样），
       改这边就要同步改那边 —— 改完拿同一份真实课表/成绩页在两边各跑一遍对账。
    3. 🔴 **请求之间留间隔**（POLITE_DELAY）。强智对频繁请求敏感，
@@ -37,7 +37,7 @@
 
   var BASE = 'https://newjw.cau.edu.cn';
   var JSXS = '/jsxsd';
-  var POLITE_DELAY = 800;      // 毫秒。和 cau_jw.py 的 POLITE_DELAY 对齐
+  var POLITE_DELAY = 800;      // 毫秒。和 jw_client.py 的 POLITE_DELAY 对齐
   var NOTICE_TTL = 30 * 60 * 1000;
 
   /* ---------------------------------------------------------------- 小工具 */
@@ -76,7 +76,7 @@
 
   function cellText(s) { return cleanText(s).replace(/\s+/g, ' ').trim(); }
 
-  /* 公告那边用的是另一套清洗（notice_cau.py 的 _clean）：**所有空白都压成一个空格**，
+  /* 公告那边用的是另一套清洗（notice_campus.py 的 _clean）：**所有空白都压成一个空格**，
      换行也算。标题里常有 <br/>，用 cleanText 会留下换行，和网页版显示不一致。 */
   function noticeClean(s) {
     return unescapeHtml(String(s == null ? '' : s).replace(/<[^>]+>/g, ''))
@@ -102,7 +102,7 @@
   }
 
   /* 按 div 深度配对取 class 含 cls 的块。普通非贪婪正则会在内层 </div> 停住，
-     一个格子里有多门课时就会漏掉第二门 —— cau_jw.py 里踩过。 */
+     一个格子里有多门课时就会漏掉第二门 —— jw_client.py 里踩过。 */
   function divBlocks(html, cls) {
     var out = [];
     var pat = new RegExp('<div\\b[^>]*\\bclass=["\'][^"\']*\\b' + escRe(cls) +
@@ -197,7 +197,7 @@
   }
 
   /* 强智登录编码：学号%%%密码 的前 20 个字符之后，按 sxh 逐位插入 scode。
-     🔴 和 cau_jw.py 的 encode_password 必须一字不差 —— 差一位就是「密码不对」。 */
+     🔴 和 jw_client.py 的 encode_password 必须一字不差 —— 差一位就是「密码不对」。 */
   function encodePassword(user, pwd, scode, sxh) {
     var code = user + '%%%' + pwd;
     var enc = '';
@@ -895,7 +895,7 @@
 
   /* ---------------------------------------------------------------- 公告 */
 
-  /* 学生不关心的噪音：招聘/招租/招标/采购。和 notice_cau.py 的 _DROP 同一份。 */
+  /* 学生不关心的噪音：招聘/招租/招标/采购。和 notice_campus.py 的 _DROP 同一份。 */
   var DROP = [
     '招聘', '招租', '招标', '采购', '中标', '询价', '博士后', '科研助理',
     '拟聘', '合同聘用', '人员公示', '人才派遣', '劳务派遣',
